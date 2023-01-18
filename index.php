@@ -11,11 +11,18 @@ $uriData = explode( '/', $uri );
 $requestBodyText = file_get_contents('php://input');
 $requestBody = json_decode($requestBodyText);
 
+function append_to_file($line_to_append) {
+  $date = date('Y/m/d H:i:s');
+  $file_path = dirname(__FILE__) . '/logs.txt';
+  $file = fopen($file_path, "a");
+  fwrite($file, $line_to_append . ",'$date' \n");
+  fclose($file);
+}
 switch ($method) {
     case 'PUT':
 
-      $name =$requestBody->PlaylistName;
-      $id=$requestBody->PlaylistId;
+      $name =$requestBody->name;
+      $id=$requestBody->id;
       // $name="updatedname";
       // $id="1";
       $conn = mysqli_connect($servername, $username, $password, $db) or die("Connect failed: %s\n". $conn -> error);
@@ -25,25 +32,29 @@ switch ($method) {
       
       if (mysqli_stmt_execute($stmt)) {
         echo "Playlist $id, $name updated successfully.";
+        append_to_file("PUT, $id, $name");
       } else {
         echo "Error updating playlist: " . mysqli_error($conn);
       }
-      
+
       mysqli_stmt_close($stmt);
       mysqli_close($conn);
       break;
     case 'POST':
 
-      $name =$requestBody->PlaylistName;
-      $name = $_POST['PlaylistName'];
+      $name =$requestBody->name;
+      $userid =$requestBody->userid;
       $conn = mysqli_connect($servername, $username, $password,$db) or die("Connect failed: %s\n". $conn -> error);
-      $sql = "INSERT INTO playlists (name,description,public) VALUES ('$name', 'description','true');";
+      $sql = "INSERT INTO playlists (name,description,public,userid) VALUES ('$name', 'description','true','$userid');";
         $result = mysqli_query($conn, $sql);
+     
       echo "Created $name";
+      append_to_file("POST, $name, $userid");
       break;
     case 'GET':
+      $userid=$uriData[2];
       $conn = mysqli_connect($servername, $username, $password,$db) or die("Connect failed: %s\n". $conn -> error);
-      $sql = "SELECT id as PlaylistId,name as PlaylistName FROM playlists";
+      $sql = "SELECT id ,name FROM playlists WHERE userid='$userid'";
         $result = mysqli_query($conn, $sql);
 
         $userArr = array();
@@ -51,16 +62,18 @@ switch ($method) {
         {
             $userArr[] = $row;
         }
+        $data =array("items" => $userArr);
     
-        echo json_encode($userArr,JSON_UNESCAPED_SLASHES);
+        echo json_encode($data,JSON_UNESCAPED_SLASHES);
       
       break;
-      case strtoupper('delete'):
+    case strtoupper('delete'):
           $id=$uriData[2];
           $sql = "DELETE FROM playlists WHERE id = $id;";
           $conn = mysqli_connect($servername, $username, $password,$db) or die("Connect failed: ". $conn -> error);
           $result = mysqli_query($conn, $sql);
-          echo "deleted";
+          append_to_file("DELETE,$id");
+
         break;
     default:
     echo json_encode(
@@ -70,4 +83,3 @@ switch ($method) {
   }
 
 ?>
-
