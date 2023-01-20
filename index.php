@@ -90,6 +90,11 @@ function validateSession($sessionId)
 }
 
 
+function escape($data)
+{
+    return str_replace(',', '\,', $data);
+}
+
 switch ($method) {
     case 'PUT':
 
@@ -103,7 +108,7 @@ switch ($method) {
 
         if (mysqli_stmt_execute($stmt)) {
             echo "Playlist $id, $name updated successfully.";
-            append_to_file("PUT, $id, $name");
+            append_to_file("PUT, $id, ".escape($name));
         } else {
             echo "Error updating playlist: " . mysqli_error($conn);
         }
@@ -155,7 +160,7 @@ switch ($method) {
                 $result = mysqli_query($conn, $sql);
 
                 echo "Created $name";
-                append_to_file("POST, $name, $userid");
+                append_to_file("POST, ".escape($name).", $userid");
                 break;
             case 'GET':
                 $userid = $uriData[2];
