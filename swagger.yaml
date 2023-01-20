@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Spotify Playlist API in PHP
+  description: >-
+    This is a OpenAPI 3.0 specification about a php api that parforms CRUD
+    operations on items that are like spotify playlists.  You can find out more
+    about
+
+    the spotify API at
+    [https://developer.spotify.com/documentation/web-api/reference/#/](https://developer.spotify.com/documentation/web-api/reference/#/). 
+  version: 1.0.11
+servers:
+  - url: http://192.168.21.23
+tags:
+  - name: playlists
+    description: Modify Playlist items
+paths:
+  /playlists/{UserId}:
+    parameters:
+        - name: UserId
+          in: path
+          description: ID of user whose playlists to fetch
+          required: true
+          schema:
+            type: string
+            format: String
+    get:
+      tags:
+        - playlists
+      summary: Returns playlists in JSON
+      description: Returns a array of playlist items by userID
+      operationId: getPlaylists
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int32
+              examples:
+                Playlist name and id:
+                  value: '{"items":[{"id":"1","name":"Examplename"}]}'
+      security:
+        - Spotify_auth:
+            - write:playlists
+            - read:playlists
+
+  /playlists:
+    post:
+      tags:
+        - playlists
+      summary: Create a new playlist item
+      description: Create a new playlist item
+      operationId: NewPlaylist
+      parameters:
+        - in: header
+          name: PlaylistName
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                PlaylistName created:
+                  value: PlaylistName Created
+        '405':
+          description: Invalid input
+      security:
+        - Spotify_auth:
+            - write:playlists
+            - read:playlists
+    put:
+      tags:
+        - playlists
+      summary: Update a playlist name by ID
+      description: >-
+      operationId: UpdateplaylistName
+      parameters:
+        - in: header
+          name: PlaylistId
+          schema:
+            type: integer
+            format: 64bit
+          required: true
+        - in: header
+          name: PlaylistName
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Playlist updated
+          content:
+            text/plain; charset=utf-8:
+              examples:
+                 Updated:
+                  value: Playlist 46, {Name} updated successfully.
+      security:
+          - Spotify_auth:
+              - write:playlists
+              - read:playlists
+  /playlists/{PlaylistId}:
+    delete:
+      tags:
+        - playlists
+      summary: Delete Playlist by ID
+      description: delete a playlist by sending a id in the url with DELETE
+      operationId: deletePlaylist
+      parameters:
+        - name: PlaylistId
+          in: path
+          description: ID of playlist to delete
+          required: true
+          schema:
+           type: string
+           format: String
+      responses:
+        '200':
+          description: Playlist {id} deleted
+      security:
+        - Spotify_auth:
+            - write:playlists
+            - read:playlists
+components:
+  securitySchemes:
+    Spotify_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://accounts.spotify.com/en/login
+          scopes:
+            write:playlists: modify playlists in your account
+            read:playlists: read your playlists
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+          
+          
+          
