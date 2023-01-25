@@ -3,7 +3,7 @@
 
 1. `git clone https://github.com/kristjan-steinfeldt/PHP_Api`
 2. Replace database.php variables with your own sql variables 
-3. `sudo mysql -u root -p < dump_file.sql`
+3. `sudo mysql -u root -p < doc/database.sql`
 
 
 #Setting up SWAGGER
