@@ -10,13 +10,27 @@ info:
         [https://developer.spotify.com/documentation/web-api/reference/#/](https://developer.spotify.com/documentation/web-api/reference/#/). 
 servers:
     -
-        url: 'http://localhost/vs21KristjanJaKarl/PHP_Api/'
+        url: 'http://192.168.21.23'
 paths:
     '/playlists/{UserId}':
-        description: Playlist
+        summary: Endpoint for Get
         get:
             tags:
                 - playlists
+            parameters:
+                -
+                    examples:
+                        Userid:
+                            value: 'nfi32ni4lgb34bg4lig4bug'
+                        OldAccountUserId:
+                            value: 'kristjansteinfeldt'
+                    name: UserId
+                    description: ID of user whose playlists to fetch
+                    schema:
+                        format: String
+                        type: string
+                    in: path
+                    required: true
             responses:
                 '200':
                     content:
@@ -30,11 +44,6 @@ paths:
                                 Playlist name and id:
                                     value: '{"items":[{"id":"1","name":"Examplename"}]}'
                     description: successful operation
-            security:
-                -
-                    Spotify_auth:
-                        - 'write:playlists'
-                        - 'read:playlists'
             operationId: getPlaylists
             summary: Returns playlists in JSON
             description: Returns a array of playlist items by userID
@@ -48,23 +57,26 @@ paths:
                 in: path
                 required: true
     /playlists:
+        summary: Endpoint for put and post
         put:
+            requestBody:
+                description: |-
+                    {
+                    "name":"Test",
+                    "userid":"kristjansteinfeldt"
+                    }
+                content:
+                    application/json:
+                        schema:
+                            type: string
+                        examples:
+                            Body:
+                                value:
+                                    name: Test
+                                    userid: kristjansteinfeldt
+                required: true
             tags:
                 - playlists
-            parameters:
-                -
-                    name: PlaylistId
-                    schema:
-                        format: 64bit
-                        type: integer
-                    in: header
-                    required: true
-                -
-                    name: PlaylistName
-                    schema:
-                        type: string
-                    in: header
-                    required: true
             responses:
                 '200':
                     content:
@@ -75,22 +87,25 @@ paths:
                     description: Playlist updated
             security:
                 -
-                    Spotify_auth:
-                        - 'write:playlists'
-                        - 'read:playlists'
+                    Sessionid: []
             operationId: UpdateplaylistName
             summary: Update a playlist name by ID
             description: ''
         post:
+            requestBody:
+                description: Post body
+                content:
+                    application/json:
+                        schema:
+                            type: string
+                        examples:
+                            Post body:
+                                value:
+                                    name: Test
+                                    userid: kristjansteinfeldt
+                required: true
             tags:
                 - playlists
-            parameters:
-                -
-                    name: PlaylistName
-                    schema:
-                        type: string
-                    in: header
-                    required: true
             responses:
                 '200':
                     content:
@@ -103,23 +118,24 @@ paths:
                     description: Invalid input
             security:
                 -
-                    Spotify_auth:
-                        - 'write:playlists'
-                        - 'read:playlists'
+                    Sessionid: []
             operationId: NewPlaylist
             summary: Create a new playlist item
             description: Create a new playlist item
     '/playlists/{PlaylistId}':
+        summary: Endpoint for delete
         delete:
             tags:
                 - playlists
             parameters:
                 -
+                    examples:
+                        Id:
+                            value: '1'
                     name: PlaylistId
                     description: ID of playlist to delete
                     schema:
-                        format: String
-                        type: string
+                        type: integer
                     in: path
                     required: true
             responses:
@@ -127,68 +143,50 @@ paths:
                     description: 'Playlist {id} deleted'
             security:
                 -
-                    Spotify_auth:
-                        - 'write:playlists'
-                        - 'read:playlists'
+                    Sessionid: []
             operationId: deletePlaylist
             summary: Delete Playlist by ID
             description: delete a playlist by sending a id in the url with DELETE
-    /sessions:
-        summary: Path used to manage the list of sessions.
-        description: >-
-            The REST endpoint/path used to list and create zero or more `Session` entities.  This path
-            contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+    /playlists/sessions:
         post:
             requestBody:
-                description: A new `Session` to be created.
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/Session'
+                            type: array
+                            items:
+                                type: string
+                        examples:
+                            Admin:
+                                value:
+                                    username: admin
+                                    password: password
                 required: true
             responses:
-                '201':
+                '200':
                     content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Session'
+                        text/xml:
                             examples:
-                                Session response:
-                                    value:
-                                        sessionId: >-
-                                            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                    description: Successful response.
-            operationId: createSession
-            summary: Create a Session
-            description: Creates a new instance of a `Session`.
+                                SessionID:
+                                    value: 61c15c5b
+                    description: Sessionid
+                '401':
+                    content:
+                        text/xml:
+                            examples:
+                                Invalid username or password:
+                                    value: Invalid username or password
+                    description: Invalid username or password
+            description: |
+                Create a session with username and password
 components:
-    schemas:
-        Session:
-            title: Root Type for Session
-            description: ''
-            type: object
-            properties:
-                username:
-                    type: string
-                password:
-                    type: string
-            example:
-                username: text
-                password: text
     securitySchemes:
-        Spotify_auth:
-            flows:
-                implicit:
-                    authorizationUrl: 'https://accounts.spotify.com/en/login'
-                    scopes:
-                        'write:playlists': modify playlists in your account
-                        'read:playlists': read your playlists
-            type: oauth2
-        api_key:
-            type: apiKey
-            name: api_key
-            in: header
+        Sessionid:
+            scheme: basic
+            type: http
+            description: Sessionid params
 tags:
     -
         name: playlists
         description: Modify Playlist items
+          
