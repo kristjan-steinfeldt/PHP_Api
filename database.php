@@ -1,7 +1,7 @@
 <?php
       $servername = "localhost";
-      $username = "$usernam";
-      $password = "$password";
+      $username = "root";
+      $password = "root";
       $db = "rest_api";
   
 ?>
